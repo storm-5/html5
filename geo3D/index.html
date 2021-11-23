@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+  <head>
+    <meta charset="utf-8" />
+    <title>ECharts</title>
+    <script src="asset/echarts/echarts.min.js"></script>
+    <script src="asset/echarts-gl/echarts-gl.min.js"></script>
+    <script src="asset/echarts-china-cities-js/guang3_dong1_guang3_zhou1.js"></script>
+  </head>
+  <body  style="height: 100%; margin: 0">
+    <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post" style="height: 10%; margin: 0">
+      <fieldset>
+        <h2>选择数据文件</h2>
+        <input type='file' id='fileinput'>
+        <input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
+      </fieldset>
+    </form>
+
+    <div id="container" style="height: 90%"></div>
+
+    <script type="text/javascript">
+      var dom = document.getElementById("container");
+      var myChart = echarts.init(dom);
+
+      function loadFile() {
+        var input, file, fr;
+
+        if (typeof window.FileReader !== 'function') {
+          alert("当前浏览器不支持.");
+          return;
+        }
+
+        input = document.getElementById('fileinput');
+        if (!input) {
+          alert("没有找到输入表单: fileinput");
+        } else if (!input.files) {
+          alert("当前浏览器不支持文件输入");
+        } else if (!input.files[0]) {
+          alert("点击'读取'按钮时，请先选择数据文件");
+        } else {
+          file = input.files[0];
+          fr = new FileReader();
+          // 注册事件。当文件读取完成时触发
+          fr.onload = showMap;
+          // 开始读取文件
+          fr.readAsText(file);
+        }
+      }
+
+      function showMap(e) {
+        data = JSON.parse(e.target.result);
+        myChart.setOption({
+          backgroundColor: '#cdcfd5',
+          geo3D: {
+            map: '广州',
+            shading: 'lambert',
+            light: {
+              main: {
+                intensity: 5,
+                shadow: true,
+                shadowQuality: 'high',
+                alpha: 30
+              },
+              ambient: {
+                intensity: 0
+              },
+              ambientCubemap: {
+                texture: 'data-gl/asset/canyon.hdr',
+                exposure: 1,
+                diffuseIntensity: 0.5
+              }
+            },
+            viewControl: {
+              distance: 50,
+              panMouseButton: 'left',
+              rotateMouseButton: 'right'
+            },
+            groundPlane: {
+              show: true,
+              color: '#999'
+            },
+            postEffect: {
+              enable: true,
+              bloom: {
+                enable: false
+              },
+              SSAO: {
+                radius: 1,
+                intensity: 1,
+                enable: true
+              },
+              depthOfField: {
+                enable: false,
+                focalRange: 10,
+                blurRadius: 10,
+                fstop: 1
+              }
+            },
+            temporalSuperSampling: {
+              enable: true
+            },
+            itemStyle: {},
+            regionHeight: 2
+          },
+          visualMap: {
+            max: 40,
+            calculable: true,
+            realtime: false,
+            inRange: {
+              color: [
+                '#313695',
+                '#4575b4',
+                '#74add1',
+                '#abd9e9',
+                '#e0f3f8',
+                '#ffffbf',
+                '#fee090',
+                '#fdae61',
+                '#f46d43',
+                '#d73027',
+                '#a50026'
+              ]
+            },
+            outOfRange: {
+              colorAlpha: 0
+            }
+          },
+          series: [
+            {
+              type: 'bar3D',
+              coordinateSystem: 'geo3D',
+              shading: 'lambert',
+              data: data,
+              barSize: 0.1,
+              minHeight: 0.2,
+              silent: false,
+              itemStyle: {
+                color: 'orange'
+                // opacity: 0.8
+              }
+            }
+          ]
+        });
+      }
+    </script>
+  </body>
+</html>
